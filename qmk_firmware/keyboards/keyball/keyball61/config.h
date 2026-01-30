@@ -84,3 +84,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // レイヤー3でのスクロールモードを無効化（0を指定することでどのレイヤーでも発動しなくなります）
 #undef KEYBALL_SCROLL_LAYER
 #define KEYBALL_SCROLL_LAYER 0
+#define PIMORONI_TRACKBALL_SCROLL_MASK 0
