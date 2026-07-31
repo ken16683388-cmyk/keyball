@@ -7,6 +7,7 @@ on:
         description: 'Keyboard'
         required: true
         type: choice
+        default: keyball61
         options:
         - keyball39
         - keyball44
@@ -17,7 +18,7 @@ on:
         description: 'Keymap'
         required: true
         type: string
-        default: 'default'
+        default: 'saru'
 
 jobs:
 

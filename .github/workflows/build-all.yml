@@ -32,6 +32,8 @@ jobs:
         keyboard: [ keyball39, keyball44, keyball61, keyball46, one47 ]
         keymap: [ test, default, via ]
         include:
+          - keyboard: keyball61
+            keymap:   saru
           - keyboard: keyball46
             keymap:   test_Left
           - keyboard: keyball46
