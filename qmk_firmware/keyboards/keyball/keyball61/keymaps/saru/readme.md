@@ -13,6 +13,7 @@ Personal Keyball61 firmware based on the upstream `via` keymap.
 - Enables the split watchdog for recovery when the two halves fail to establish communication.
 - Waits for USB enumeration at startup.
 - Adds a 500 ms wake-up delay after USB suspend.
+- Uses a fixed 600 CPI default without pointer acceleration.
 
 ## Smart scroll
 
