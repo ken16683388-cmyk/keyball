@@ -11,7 +11,7 @@ on:
     tags-ignore:
       - '*'
     branches:
-      - '*'
+      - '**'
 
   pull_request:
     paths:
