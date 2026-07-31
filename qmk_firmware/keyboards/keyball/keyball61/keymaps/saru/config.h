@@ -43,3 +43,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SPLIT_WATCHDOG_ENABLE
 #define USB_WAIT_FOR_ENUMERATION
 #define USB_SUSPEND_WAKEUP_DELAY 500
+
+// Preserve precise low-speed scrolling while allowing faster long scrolls.
+// Thresholds are raw sensor counts per mouse report (125 Hz by default).
+#define SARU_SMART_SCROLL_MEDIUM_THRESHOLD 16
+#define SARU_SMART_SCROLL_FAST_THRESHOLD 48

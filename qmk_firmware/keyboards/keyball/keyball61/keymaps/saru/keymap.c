@@ -56,6 +56,74 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
+static int16_t saru_divmod16(int16_t *value, int16_t divisor) {
+    int16_t quotient = *value / divisor;
+    *value -= quotient * divisor;
+    return quotient;
+}
+
+static int8_t saru_clip_to_int8(int16_t value) {
+    return value < -127 ? -127 : value > 127 ? 127 : (int8_t)value;
+}
+
+static uint16_t saru_motion_speed(const keyball_motion_t *motion) {
+    uint16_t x = motion->x < 0 ? (uint16_t)(-(int32_t)motion->x) : (uint16_t)motion->x;
+    uint16_t y = motion->y < 0 ? (uint16_t)(-(int32_t)motion->y) : (uint16_t)motion->y;
+    return x > y ? x : y;
+}
+
+static int16_t saru_smart_scroll_divisor(const keyball_motion_t *motion) {
+    int16_t  divisor = 1 << (keyball_get_scroll_div() - 1);
+    uint16_t speed   = saru_motion_speed(motion);
+
+    // The normal divider is retained for precise movement. Faster rolls use
+    // 2x or 4x scroll speed without changing pointer movement or adding
+    // momentum after the ball stops.
+    if (speed >= SARU_SMART_SCROLL_FAST_THRESHOLD) {
+        divisor = divisor >= 4 ? divisor / 4 : 1;
+    } else if (speed >= SARU_SMART_SCROLL_MEDIUM_THRESHOLD) {
+        divisor = divisor >= 2 ? divisor / 2 : 1;
+    }
+    return divisor;
+}
+
+void keyball_on_apply_motion_to_mouse_scroll(keyball_motion_t *motion, report_mouse_t *report, bool is_left) {
+    int16_t divisor = saru_smart_scroll_divisor(motion);
+    int16_t x       = saru_divmod16(&motion->x, divisor);
+    int16_t y       = saru_divmod16(&motion->y, divisor);
+
+    report->h = saru_clip_to_int8(y);
+    report->v = -saru_clip_to_int8(x);
+    if (is_left) {
+        report->h = -report->h;
+        report->v = -report->v;
+    }
+
+#if KEYBALL_SCROLLSNAP_ENABLE == 1
+    uint32_t now = timer_read32();
+    if (report->h != 0 || report->v != 0) {
+        keyball.scroll_snap_last = now;
+    } else if (TIMER_DIFF_32(now, keyball.scroll_snap_last) >= KEYBALL_SCROLLSNAP_RESET_TIMER) {
+        keyball.scroll_snap_tension_h = 0;
+    }
+    if (abs(keyball.scroll_snap_tension_h) < KEYBALL_SCROLLSNAP_TENSION_THRESHOLD) {
+        keyball.scroll_snap_tension_h += y;
+        report->h = 0;
+    }
+#elif KEYBALL_SCROLLSNAP_ENABLE == 2
+    switch (keyball_get_scrollsnap_mode()) {
+        case KEYBALL_SCROLLSNAP_MODE_VERTICAL:
+            report->h = 0;
+            break;
+        case KEYBALL_SCROLLSNAP_MODE_HORIZONTAL:
+            report->v = 0;
+            break;
+        default:
+            break;
+    }
+#endif
+}
+
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode when the highest layer is 3
     keyball_set_scroll_mode(get_highest_layer(state) == 3);
