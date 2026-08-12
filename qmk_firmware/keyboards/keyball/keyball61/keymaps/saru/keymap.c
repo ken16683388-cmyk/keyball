@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 
 #include "quantum.h"
+#include "key_stats_telemetry.h"
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -60,6 +61,15 @@ static int16_t saru_divmod16(int16_t *value, int16_t divisor) {
     int16_t quotient = *value / divisor;
     *value -= quotient * divisor;
     return quotient;
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    key_stats_telemetry_record(keycode, record);
+    return true;
+}
+
+void housekeeping_task_user(void) {
+    key_stats_telemetry_task();
 }
 
 static int8_t saru_clip_to_int8(int16_t value) {
@@ -125,6 +135,7 @@ void keyball_on_apply_motion_to_mouse_scroll(keyball_motion_t *motion, report_mo
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
+    key_stats_telemetry_layer_state(state);
     // Auto enable scroll mode when the highest layer is 3
     keyball_set_scroll_mode(get_highest_layer(state) == 3);
     return state;
